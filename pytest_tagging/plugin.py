@@ -1,14 +1,10 @@
-import argparse
 import threading
-from collections import Counter, abc, defaultdict
-from enum import Enum, auto
-from typing import Iterable, Iterator, Optional
+from collections import Counter
+from enum import Enum
 
 import pytest
 
 from .utils import TagCounter, get_tags_from_item
-
-CACHE_PREFIX = "pytest-tagging"
 
 
 class OperandChoices(Enum):

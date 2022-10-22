@@ -20,7 +20,8 @@ lint:
 
 .PHONY: test
 test: $(VENV)
-	$(BIN)/pytest tests
+	$(BIN)/coverage run --source=pytest_tagging -m pytest tests
+	$(BIN)/coverage report
 
 .PHONY: docker/build
 docker/build:

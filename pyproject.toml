@@ -1,8 +1,13 @@
 [tool.poetry]
 name = "pytest_tagging"
-version = "0.1.0"
+version = "1.0.0"
 description = "a pytest plugin to tag tests"
 authors = ["Sergio Castillo <s.cast.lara@gmail.com>"]
+readme = "README.md"
+license = "MIT"
+homepage = "https://github.com/scastlara/pytest-tagging"
+repository = "https://github.com/scastlara/pytest-tagging"
+
 
 [tool.poetry.dependencies]
 python = "^3.10"
@@ -13,6 +18,7 @@ black = "^22.10.0"
 isort = "^5.10.1"
 mypy = "^0.982"
 pytest-parallel = "^0.1.1"
+pytest-cov = "^4.0.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
@@ -20,3 +26,6 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry.plugins.pytest11]
 pytest_tagging = "pytest_tagging.plugin"
+
+[tool.coverage.report]
+fail_under=95

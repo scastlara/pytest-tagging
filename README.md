@@ -1,3 +1,6 @@
+![tests](https://github.com/scastlara/pytest-tagging/actions/workflows/tests.yml/badge.svg?branch=main)
+[![PyPI version](https://badge.fury.io/py/pytest-tagging.svg)](https://badge.fury.io/py/pytest-tagging)
+
 # pytest-tagging
 [pytest](https://docs.pytest.org/en/7.1.x/) plugin that allows tagging tests using arbitrary strings.
 

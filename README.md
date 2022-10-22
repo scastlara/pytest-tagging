@@ -4,7 +4,7 @@
 It supports selecting only tests with a specific tag, and display a counter of how many tests failed
 for each specific tag.
 
-This package exists because doing all of this with `pytest.mark` is painful, since it requires registering plugins, 
+This package exists because doing all of this with `pytest.mark` is painful, since it requires registering marks, 
 and you cannot use variables defined elsewhere easily.
 
 

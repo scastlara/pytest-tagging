@@ -1,13 +1,3 @@
-from threading import Thread
-from unittest.mock import Mock, patch
-
-import pytest
-
-from pytest_tagging.plugin import TaggerRunner
-
-from .utils import FakeCache
-
-
 def test_collect_tag(testdir):
     testdir.makepyfile(
         """

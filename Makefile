@@ -21,3 +21,15 @@ lint:
 .PHONY: test
 test: $(VENV)
 	$(BIN)/pytest tests
+
+.PHONY: docker/build
+docker/build:
+	docker build --tag pytest_tagging .
+
+.PHONY: docker/test
+docker/test:
+	docker run pytest_tagging -c 'make test'
+
+.PHONY: docker/lint
+docker/lint:
+	docker run pytest_tagging -c 'make lint'

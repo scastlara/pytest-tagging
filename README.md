@@ -1,5 +1,5 @@
 # pytest-tagging
-[pytest](https://docs.pytest.org/en/7.1.x/) plugin that allows tagging test with arbitrary strings.
+[pytest](https://docs.pytest.org/en/7.1.x/) plugin that allows tagging tests using arbitrary strings.
 
 It supports selecting only tests with a specific tag, and display a counter of how many tests failed
 for each specific tag.

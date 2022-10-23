@@ -3,8 +3,6 @@ from typing import Any, Iterable
 
 
 class TagCounterThreadSafe:
-    """Counter that uses pytest caching module to store the counts"""
-
     def __init__(self) -> None:
         self._manager = Manager()
         self.counter = self._manager.dict()

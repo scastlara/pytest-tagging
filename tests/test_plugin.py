@@ -1,3 +1,6 @@
+import pytest
+
+
 def test_collect_tag(testdir):
     testdir.makepyfile(
         """
@@ -84,7 +87,7 @@ def test_summary_contains_counts(testdir):
     result.stdout.re_match_lines("foo - 1")
 
 
-def test_taggerrunner_with_parallel(testdir):
+def test_taggerrunner_with_parallel_with_threads(testdir):
     """This fails if the taggerrunner is not threadsafe"""
     testdir.makepyfile(
         """
@@ -101,8 +104,12 @@ def test_taggerrunner_with_parallel(testdir):
         @pytest.mark.tags('bar')
         def test_tagged_3():
             assert False
+        
+        @pytest.mark.tags('bar')
+        def test_tagged_4():
+            assert False
     """
     )
     result = testdir.runpytest("--tests-per-worker=2")
     result.stdout.re_match_lines("foo - 2")
-    result.stdout.re_match_lines("bar - 2")
+    result.stdout.re_match_lines("bar - 3")

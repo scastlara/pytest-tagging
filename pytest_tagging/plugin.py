@@ -1,5 +1,4 @@
 import threading
-from collections import Counter
 from enum import Enum
 
 import pytest
@@ -13,7 +12,6 @@ class OperandChoices(Enum):
 
 
 def pytest_configure(config):
-    TagCounter.from_cache(config.cache).reset()
     config.addinivalue_line("markers", "tags('tag1', 'tag2'): add tags to a given test")
     if not config.option.collectonly:
         config.pluginmanager.register(TaggerRunner(), "taggerrunner")
@@ -43,6 +41,7 @@ def pytest_addoption(parser, pluginmanager) -> None:
 class TaggerRunner:
     def __init__(self):
         self.lock = threading.Lock()
+        self.counter = TagCounter(self.lock)
 
     def pytest_report_header(self, config) -> list[str]:
         """Add tagging config to pytest header."""
@@ -75,12 +74,11 @@ class TaggerRunner:
     @pytest.mark.trylast
     @pytest.hookimpl(hookwrapper=True)
     def pytest_terminal_summary(self, terminalreporter, exitstatus, config):
-        counter = TagCounter.from_cache(config.cache)
-        if counter:
+        if self.counter:
             terminalreporter.write_sep("=", "failing tags", yellow=True, bold=True)
             terminalreporter.ensure_newline()
 
-        for key, value in counter.items():
+        for key, value in self.counter.items():
             terminalreporter.write_line(f"{key} - {value}")
         terminalreporter.ensure_newline()
         yield
@@ -90,6 +88,4 @@ class TaggerRunner:
         yield
         if call.when == "call" and call.excinfo:
             tags = get_tags_from_item(item)
-            with self.lock:
-                counter = TagCounter.from_cache(item.config.cache)
-                counter.update(tags)
+            self.counter.update(tags)

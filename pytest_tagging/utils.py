@@ -1,38 +1,29 @@
-from collections import Counter, abc
-from typing import Any, Iterable, Iterator, Optional
-
-CACHE_PREFIX = "pytest-tagging"
+import threading
+from multiprocessing import Manager
+from typing import Any, Iterable
 
 
 class TagCounter:
     """Counter that uses pytest caching module to store the counts"""
 
-    @classmethod
-    def from_cache(cls, cache):
-        return cls(cache, cache.get(CACHE_PREFIX, {}))
-
-    def __init__(self, cache, counter_data: Optional[dict[str, int]] = None) -> None:
-        self.cache = cache
-        self.data: Counter = Counter()
-        if counter_data:
-            self.data.update(counter_data)
+    def __init__(self, lock: threading.Lock) -> None:
+        self.lock = lock
+        self._manager = Manager()
+        self.counter = self._manager.dict()
 
     def update(self, tags: Iterable[str]) -> None:
-        self.data.update(tags)
-        self.save()
+        with self.lock:
+            for tag in tags:
+                if tag in self.counter:
+                    self.counter[tag] += 1
+                else:
+                    self.counter[tag] = 1
 
-    def items(self) -> Iterator[tuple[Any, int]]:
-        for item in sorted(self.data.items(), key=lambda x: (x[1], x[0]), reverse=True):
-            yield item
-
-    def reset(self) -> None:
-        self.cache.set(CACHE_PREFIX, {})
-
-    def save(self) -> None:
-        self.cache.set(CACHE_PREFIX, self.data)
+    def items(self) -> list[Any]:
+        return self.counter.items()
 
     def __bool__(self) -> bool:
-        return bool(self.data)
+        return bool(self.counter)
 
 
 def get_tags_from_item(item) -> set[str]:

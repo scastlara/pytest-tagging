@@ -20,7 +20,7 @@ class TagCounter:
                     self.counter[tag] = 1
 
     def items(self) -> list[Any]:
-        return self.counter.items()
+        return sorted(self.counter.items(), key=lambda x: (x[1], x[0]), reverse=True)
 
     def __bool__(self) -> bool:
         return bool(self.counter)

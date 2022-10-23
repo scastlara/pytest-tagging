@@ -1,15 +1,14 @@
-import threading
 from multiprocessing import Manager
 from typing import Any, Iterable
 
 
-class TagCounter:
+class TagCounterThreadSafe:
     """Counter that uses pytest caching module to store the counts"""
 
-    def __init__(self, lock: threading.Lock) -> None:
-        self.lock = lock
+    def __init__(self) -> None:
         self._manager = Manager()
         self.counter = self._manager.dict()
+        self.lock = self._manager.Lock()
 
     def update(self, tags: Iterable[str]) -> None:
         with self.lock:

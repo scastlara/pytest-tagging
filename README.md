@@ -37,4 +37,4 @@ pytest --tags integration --tags MY_COMPONENT_NAME --tags-operand AND
 
 
 ## Extra
-- It is thread-safe, so it can be used with [pytest-parallel](https://github.com/browsertron/pytest-parallel) `--tests-per-worker` option.
+- It is thread-safe, so it can be used with [pytest-parallel](https://github.com/browsertron/pytest-parallel).

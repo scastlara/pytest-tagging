@@ -1,9 +1,9 @@
-import threading
+from collections import Counter
 from enum import Enum
 
 import pytest
 
-from .utils import TagCounter, get_tags_from_item
+from .utils import TagCounterThreadSafe, get_tags_from_item
 
 
 class OperandChoices(Enum):
@@ -11,10 +11,18 @@ class OperandChoices(Enum):
     AND = "AND"
 
 
-def pytest_configure(config):
+def select_counter_class(config) -> type[Counter] | type[TagCounterThreadSafe]:
+    must_be_threadsafe = getattr(config.option, "workers", None) or getattr(
+        config.option, "tests_per_worker", None
+    )
+    return TagCounterThreadSafe if must_be_threadsafe else Counter
+
+
+def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "tags('tag1', 'tag2'): add tags to a given test")
     if not config.option.collectonly:
-        config.pluginmanager.register(TaggerRunner(), "taggerrunner")
+        counter_class = select_counter_class(config)
+        config.pluginmanager.register(TaggerRunner(counter_class), "taggerrunner")
 
 
 def pytest_addoption(parser, pluginmanager) -> None:
@@ -39,9 +47,10 @@ def pytest_addoption(parser, pluginmanager) -> None:
 
 
 class TaggerRunner:
-    def __init__(self):
-        self.lock = threading.Lock()
-        self.counter = TagCounter(self.lock)
+    def __init__(
+        self, counter_class: type[Counter] | type[TagCounterThreadSafe]
+    ) -> None:
+        self.counter = counter_class()
 
     def pytest_report_header(self, config) -> list[str]:
         """Add tagging config to pytest header."""

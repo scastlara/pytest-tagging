@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pytest_tagging"
-version = "1.1.1"
+version = "1.2.0"
 description = "a pytest plugin to tag tests"
 authors = ["Sergio Castillo <s.cast.lara@gmail.com>"]
 readme = "README.md"

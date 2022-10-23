@@ -1,11 +1,11 @@
 import threading
 
-from pytest_tagging.utils import TagCounter
+from pytest_tagging.utils import TagCounterThreadSafe
 
 
-class TestTagCounter:
+class TestTagCounterThreadSafe:
     def test_update(self):
-        counter = TagCounter(threading.Lock())
+        counter = TagCounterThreadSafe()
         assert dict(counter.items()) == {}
 
         counter.update({"A", "B", "C"})
@@ -15,10 +15,10 @@ class TestTagCounter:
         assert dict(counter.items()) == {"A": 2, "B": 1, "C": 1}
 
     def test_empty_is_false(self):
-        assert bool(TagCounter(threading.Lock())) is False
+        assert bool(TagCounterThreadSafe()) is False
 
     def test_sorted_items(self):
-        counter = TagCounter(threading.Lock())
+        counter = TagCounterThreadSafe()
         counter.update({"A", "B", "C"})
         counter.update({"A"})
         counter.update({"A"})
@@ -27,7 +27,7 @@ class TestTagCounter:
         assert list(counter.items()) == [("A", 3), ("B", 2), ("C", 1)]
 
     def test_threadsafe_update(self):
-        counter = TagCounter(threading.Lock())
+        counter = TagCounterThreadSafe()
 
         def update(counter):
             counter.update({"A", "B"})

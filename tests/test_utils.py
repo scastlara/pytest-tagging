@@ -17,6 +17,15 @@ class TestTagCounter:
     def test_empty_is_false(self):
         assert bool(TagCounter(threading.Lock())) is False
 
+    def test_sorted_items(self):
+        counter = TagCounter(threading.Lock())
+        counter.update({"A", "B", "C"})
+        counter.update({"A"})
+        counter.update({"A"})
+        counter.update({"B"})
+
+        assert list(counter.items()) == [("A", 3), ("B", 2), ("C", 1)]
+
     def test_threadsafe_update(self):
         counter = TagCounter(threading.Lock())
 

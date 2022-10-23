@@ -4,7 +4,7 @@
 # pytest-tagging
 [pytest](https://docs.pytest.org/en/7.1.x/) plugin that allows tagging tests using arbitrary strings.
 
-It supports selecting only tests with a specific tag, and display a counter of how many tests failed
+It supports selecting only tests with a specific tag, and displays a counter of how many tests failed
 for each specific tag.
 
 This package exists because doing all of this with `pytest.mark` is painful, since it requires registering marks, 
@@ -37,4 +37,4 @@ pytest --tags integration --tags MY_COMPONENT_NAME --tags-operand AND
 
 
 ## Extra
-- It is thread-safe, so it can be used with [pytest-parallel](https://github.com/browsertron/pytest-parallel).
+- It is thread-safe, so it can be used with [pytest-parallel](https://github.com/browsertron/pytest-parallel) `--tests-per-worker` option.

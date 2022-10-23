@@ -1,11 +1,11 @@
-from pytest_tagging.utils import CACHE_PREFIX, TagCounter
+import threading
 
-from .utils import FakeCache
+from pytest_tagging.utils import TagCounter
 
 
 class TestTagCounter:
     def test_update(self):
-        counter = TagCounter(FakeCache())
+        counter = TagCounter(threading.Lock())
         assert dict(counter.items()) == {}
 
         counter.update({"A", "B", "C"})
@@ -14,19 +14,19 @@ class TestTagCounter:
         counter.update({"A"})
         assert dict(counter.items()) == {"A": 2, "B": 1, "C": 1}
 
-    def test_from_cache(self):
-        fake_cache = FakeCache()
-        fake_cache.set(CACHE_PREFIX, {"foo": 1})
-        counter = TagCounter.from_cache(fake_cache)
-        assert dict(counter.items()) == {"foo": 1}
+    def test_empty_is_false(self):
+        assert bool(TagCounter(threading.Lock())) is False
 
-    def test_reset(self):
-        fake_cache = FakeCache()
-        counter = TagCounter(fake_cache)
-        counter.update({"A"})
+    def test_threadsafe_update(self):
+        counter = TagCounter(threading.Lock())
 
-        assert dict(counter.items())
+        def update(counter):
+            counter.update({"A", "B"})
 
-        counter.reset()
+        threads = [threading.Thread(target=update, args=(counter,)) for _ in range(5)]
+        for thread in threads:
+            thread.start()
+        for thread in threads:
+            thread.join()
 
-        assert fake_cache.data == {CACHE_PREFIX: {}}
+        assert dict(counter.items()) == {"A": 5, "B": 5}

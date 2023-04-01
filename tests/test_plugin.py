@@ -45,7 +45,7 @@ def test_collect_only_tag(testdir):
         @pytest.mark.tags('foo')
         def test_tagged():
             assert True
-        
+
         def test_untagged():
             assert False
     """
@@ -62,7 +62,7 @@ def test_collect_tags_or(testdir):
         @pytest.mark.tags('foo')
         def test_tagged_1():
             assert True
-        
+
         @pytest.mark.tags('bar')
         def test_tagged_2():
             assert True
@@ -80,11 +80,11 @@ def test_collect_tags_and(testdir):
         @pytest.mark.tags('foo')
         def test_tagged_1():
             assert True
-        
+
         @pytest.mark.tags('bar')
         def test_tagged_2():
             assert True
-        
+
         @pytest.mark.tags('foo', 'bar')
         def test_tagged_3():
             assert True
@@ -129,12 +129,12 @@ def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
         def test_tagged_2():
             sleep(0.01)
             assert False
-        
+
         @pytest.mark.tags('bar')
         def test_tagged_3():
             sleep(0.01)
             assert False
-        
+
         @pytest.mark.tags('bar')
         def test_tagged_4():
             sleep(0.01)

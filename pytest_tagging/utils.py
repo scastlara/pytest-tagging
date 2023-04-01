@@ -24,8 +24,4 @@ class TagCounterThreadSafe:
 
 
 def get_tags_from_item(item) -> set[str]:
-    return (
-        set(item.get_closest_marker("tags").args)
-        if item.get_closest_marker("tags")
-        else set()
-    )
+    return set(item.get_closest_marker("tags").args) if item.get_closest_marker("tags") else set()

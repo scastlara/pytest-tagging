@@ -12,9 +12,7 @@ class OperandChoices(Enum):
 
 
 def select_counter_class(config) -> type[Counter] | type[TagCounterThreadSafe]:
-    must_be_threadsafe = getattr(config.option, "workers", None) or getattr(
-        config.option, "tests_per_worker", None
-    )
+    must_be_threadsafe = getattr(config.option, "workers", None) or getattr(config.option, "tests_per_worker", None)
     return TagCounterThreadSafe if must_be_threadsafe else Counter
 
 
@@ -47,9 +45,7 @@ def pytest_addoption(parser, pluginmanager) -> None:
 
 
 class TaggerRunner:
-    def __init__(
-        self, counter_class: type[Counter] | type[TagCounterThreadSafe]
-    ) -> None:
+    def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe]) -> None:
         self.counter = counter_class()
 
     def pytest_report_header(self, config) -> list[str]:
@@ -67,11 +63,11 @@ class TaggerRunner:
         for item in items:
             run_tags = set(all_run_tags)
             test_tags = get_tags_from_item(item)
-            if not run_tags:
-                selected_items.append(item)
-            elif operand is OperandChoices.OR and test_tags & run_tags:
-                selected_items.append(item)
-            elif operand is OperandChoices.AND and run_tags <= test_tags:
+            if (
+                not run_tags
+                or (operand is OperandChoices.OR and test_tags & run_tags)
+                or (operand is OperandChoices.AND and run_tags <= test_tags)
+            ):
                 selected_items.append(item)
             else:
                 deselected_items.append(item)

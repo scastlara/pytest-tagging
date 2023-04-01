@@ -1,36 +1,23 @@
+PYTHON?=python3.11
+VENV_TEST=venv/venv_test
 VENV=.venv
-BIN=$(VENV)/bin
-PYTHON=$(BIN)/python
-PYTHON_VERSION=python3.10
 
+$(VENV_TEST):
+	POETRY_VIRTUALENVS_IN_PROJECT=1 poetry env use $(PYTHON)
+	poetry install
 
-$(VENV):
-	POETRY_VIRTUALENVS_IN_PROJECT=1 poetry env use $(PYTHON_VERSION)
-	poetry install $(ARGS)
+venv: $(VENV_TEST)
 
-.PHONY: format
+lint: venv
+	$(VENV)/bin/black --diff --check pytest_tagging tests
+	$(VENV)/bin/ruff check pytest_tagging tests
+	$(VENV)/bin/mypy pytest_tagging tests
+
+unit-tests: venv
+	$(VENV)/bin/pytest
+
 format:
-	$(BIN)/black pytest_tagging tests
-	$(BIN)/isort pytest_tagging tests
+	$(VENV)/bin/ruff pytest_tagging tests --fix
+	$(VENV)/bin/black pytest_tagging tests
 
-.PHONY: lint
-lint:
-	$(BIN)/black --check pytest_tagging tests
-	$(BIN)/mypy pytest_tagging
-
-.PHONY: test
-test: $(VENV)
-	$(BIN)/coverage run --source=pytest_tagging -m pytest tests
-	$(BIN)/coverage report
-
-.PHONY: docker/build
-docker/build:
-	docker build --tag pytest_tagging .
-
-.PHONY: docker/test
-docker/test:
-	docker run pytest_tagging -c 'make test'
-
-.PHONY: docker/lint
-docker/lint:
-	docker run pytest_tagging -c 'make lint'
+test: lint unit-tests

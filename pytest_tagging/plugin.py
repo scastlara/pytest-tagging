@@ -11,6 +11,15 @@ class OperandChoices(Enum):
     AND = "AND"
 
 
+# Allows you to combine tags
+_combined_tags = {}
+
+
+def combine_tags(tag_name: str, *args):
+    """ Combine all tags in `args` into `new_tag` """
+    _combined_tags[tag_name] = args
+
+
 def select_counter_class(config) -> type[Counter] | type[TagCounterThreadSafe]:
     must_be_threadsafe = getattr(config.option, "workers", None) or getattr(config.option, "tests_per_worker", None)
     return TagCounterThreadSafe if must_be_threadsafe else Counter
@@ -86,6 +95,12 @@ class TaggerRunner:
                 deselected_items.append(item)
         else:
             operand = config.getoption("--tags-operand")
+
+            # Allows you to combine tags
+            found_combined_tags = set(all_run_tags) & set(_combined_tags)
+            for tag_name in found_combined_tags:
+                all_run_tags += _combined_tags[tag_name]
+
             for item in items:
                 run_tags = set(all_run_tags)
                 test_tags = get_tags_from_item(item)

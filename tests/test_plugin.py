@@ -200,3 +200,24 @@ def test_print_tags_available(pytester):
     res.assert_outcomes(passed=0)
     assert res.stdout.str().count("bar") == 1
     assert res.stdout.str().count("foo") == 1
+
+
+def test_combine_tags(pytester):
+    pytester.makepyfile("""
+        import pytest
+        from pytest_tagging import combine_tags
+
+        combine_tags("new_tag", "foo", "bar")
+
+        @pytest.mark.tags('bar')
+        def test_tagged1():
+            pass
+        @pytest.mark.tags('bar')
+        def test_tagged2():
+            pass
+        @pytest.mark.tags('foo')
+        def test_tagged3():
+            pass
+        """)
+    res = pytester.runpytest("--tags=new_tag")
+    res.assert_outcomes(passed=3)

@@ -29,7 +29,7 @@ def pytest_addoption(parser, pluginmanager) -> None:
         "--tags",
         type=str,
         default=[],
-        nargs="+",
+        nargs="*",
         action='extend',
         help="Run the tests that contain the given tags, separated by commas",
     )

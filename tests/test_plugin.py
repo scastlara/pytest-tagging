@@ -72,6 +72,42 @@ def test_collect_tags_or(testdir):
     result.assert_outcomes(passed=2)
 
 
+class TestsTagNotSelected:
+    def test_collect_only_tagged(self, testdir):
+        testdir.makepyfile(
+            """
+            import pytest
+    
+            @pytest.mark.tags('foo')
+            def test_tagged_1():
+                assert True
+    
+            @pytest.mark.tags('bar')
+            def test_tagged_2():
+                assert True
+        """
+        )
+        result = testdir.runpytest("--tags=foo")
+        result.assert_outcomes(passed=1, failed=0)
+
+    def test_none_tagged(self, testdir):
+        testdir.makepyfile(
+            """
+            import pytest
+
+            @pytest.mark.tags('foo')
+            def test_tagged_1():
+                assert True
+
+            @pytest.mark.tags('bar')
+            def test_tagged_2():
+                assert True
+        """
+        )
+        result = testdir.runpytest("--tags=123")
+        result.assert_outcomes(passed=0, failed=0)
+
+
 def test_collect_tags_and(testdir):
     testdir.makepyfile(
         """
@@ -145,3 +181,22 @@ def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
         result = testdir.runpytest("--workers=2", "--tests-per-worker=2")
         result.stdout.re_match_lines("foo - 2")
         result.stdout.re_match_lines("bar - 3")
+
+
+def test_print_tags_available(pytester):
+    pytester.makepyfile("""
+    import pytest
+    @pytest.mark.tags('bar')
+    def test_tagged1():
+        pass
+    @pytest.mark.tags('bar')
+    def test_tagged2():
+        pass
+    @pytest.mark.tags('foo')
+    def test_tagged3():
+        pass
+    """)
+    res = pytester.runpytest("--tags")
+    res.assert_outcomes(passed=0)
+    assert res.stdout.str().count("bar") == 1
+    assert res.stdout.str().count("foo") == 1

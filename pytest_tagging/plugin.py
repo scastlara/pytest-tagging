@@ -29,7 +29,8 @@ def pytest_addoption(parser, pluginmanager) -> None:
         "--tags",
         type=str,
         default=[],
-        action="append",
+        nargs="+",
+        action='extend',
         help="Run the tests that contain the given tags, separated by commas",
     )
     group.addoption(
@@ -48,6 +49,25 @@ class TaggerRunner:
     def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe]) -> None:
         self.counter = counter_class()
 
+    def get_available_tags(self, items, print_info=True) -> list:
+        """
+        Returns all available tags
+        :param items: Items from pytest_collection_modifyitems
+        :param print_info: If True, prints all available tags
+        """
+        available_tags = []
+        for item in items:
+
+            test_tags = set(get_tags_from_item(item))
+            for tag in test_tags:
+                if tag not in available_tags:
+                    available_tags.append(tag)
+        if print_info:
+            print("Available tags:")
+            print("\n".join(available_tags))
+
+        return available_tags
+
     def pytest_report_header(self, config) -> list[str]:
         """Add tagging config to pytest header."""
         tags = config.getoption("--tags")
@@ -59,18 +79,24 @@ class TaggerRunner:
         deselected_items = []
 
         all_run_tags = config.getoption("--tags")
-        operand = config.getoption("--tags-operand")
-        for item in items:
-            run_tags = set(all_run_tags)
-            test_tags = get_tags_from_item(item)
-            if (
-                not run_tags
-                or (operand is OperandChoices.OR and test_tags & run_tags)
-                or (operand is OperandChoices.AND and run_tags <= test_tags)
-            ):
-                selected_items.append(item)
-            else:
+
+        if len(all_run_tags) == 0:
+            self.get_available_tags(items)
+            for item in items:
                 deselected_items.append(item)
+        else:
+            operand = config.getoption("--tags-operand")
+            for item in items:
+                run_tags = set(all_run_tags)
+                test_tags = get_tags_from_item(item)
+                if (
+                    not run_tags
+                    or (operand is OperandChoices.OR and test_tags & run_tags)
+                    or (operand is OperandChoices.AND and run_tags <= test_tags)
+                ):
+                    selected_items.append(item)
+                else:
+                    deselected_items.append(item)
 
         config.hook.pytest_deselected(items=deselected_items)
         items[:] = selected_items

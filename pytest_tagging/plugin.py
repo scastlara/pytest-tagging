@@ -15,7 +15,7 @@ class OperandChoices(Enum):
 _combined_tags = {}
 
 
-def combine_tags(tag_name: str, *args):
+def combine_tags(tag_name: str, *args: str) -> None:
     """ Combine all tags in `args` into `new_tag` """
     _combined_tags[tag_name] = args
 

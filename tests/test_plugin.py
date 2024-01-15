@@ -184,7 +184,8 @@ def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
 
 
 def test_print_tags_available(pytester):
-    pytester.makepyfile("""
+    pytester.makepyfile(
+    """
     import pytest
     @pytest.mark.tags('bar')
     def test_tagged1():
@@ -195,7 +196,8 @@ def test_print_tags_available(pytester):
     @pytest.mark.tags('foo')
     def test_tagged3():
         pass
-    """)
+    """
+    )
     res = pytester.runpytest("--tags")
     res.assert_outcomes(passed=0)
     assert res.stdout.str().count("bar") == 1
@@ -203,7 +205,8 @@ def test_print_tags_available(pytester):
 
 
 def test_combine_tags(pytester):
-    pytester.makepyfile("""
+    pytester.makepyfile(
+        """
         import pytest
         from pytest_tagging import combine_tags
 
@@ -218,6 +221,7 @@ def test_combine_tags(pytester):
         @pytest.mark.tags('foo')
         def test_tagged3():
             pass
-        """)
+        """
+    )
     res = pytester.runpytest("--tags=new_tag")
     res.assert_outcomes(passed=3)

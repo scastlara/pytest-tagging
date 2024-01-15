@@ -16,7 +16,7 @@ _combined_tags = {}
 
 
 def combine_tags(tag_name: str, *args):
-    """ Combine all tags in `args` into `new_tag` """
+    """Combine all tags in `args` into `new_tag`"""
     _combined_tags[tag_name] = args
 
 
@@ -39,7 +39,7 @@ def pytest_addoption(parser, pluginmanager) -> None:
         type=str,
         default=[],
         nargs="*",
-        action='extend',
+        action="extend",
         help="Run the tests that contain the given tags, separated by commas",
     )
     group.addoption(
@@ -66,7 +66,6 @@ class TaggerRunner:
         """
         available_tags = []
         for item in items:
-
             test_tags = set(get_tags_from_item(item))
             for tag in test_tags:
                 if tag not in available_tags:

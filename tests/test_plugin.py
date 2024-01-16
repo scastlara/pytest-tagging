@@ -77,11 +77,11 @@ class TestsTagNotSelected:
         testdir.makepyfile(
             """
             import pytest
-    
+
             @pytest.mark.tags('foo')
             def test_tagged_1():
                 assert True
-    
+
             @pytest.mark.tags('bar')
             def test_tagged_2():
                 assert True
@@ -185,7 +185,7 @@ def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
 
 def test_print_tags_available(pytester):
     pytester.makepyfile(
-    """
+        """
     import pytest
     @pytest.mark.tags('bar')
     def test_tagged1():
@@ -202,6 +202,20 @@ def test_print_tags_available(pytester):
     res.assert_outcomes(passed=0)
     assert res.stdout.str().count("bar") == 1
     assert res.stdout.str().count("foo") == 1
+
+
+def test_no_print_tags_unspecified(pytester):
+    pytester.makepyfile(
+        """
+        import pytest
+        @pytest.mark.tags('bar')
+        def test_tagged1():
+            pass
+        """
+    )
+    res = pytester.runpytest("")
+
+    assert "Available tags" not in res.stdout.str()
 
 
 def test_combine_tags(pytester):

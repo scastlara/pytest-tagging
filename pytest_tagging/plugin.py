@@ -3,7 +3,7 @@ from enum import Enum
 
 import pytest
 
-from .utils import TagCounterThreadSafe, get_tags_from_item
+from .utils import TagCounterThreadSafe, get_run_tags, get_tags_from_item
 
 
 class OperandChoices(Enum):
@@ -34,12 +34,18 @@ def pytest_configure(config) -> None:
 
 def pytest_addoption(parser, pluginmanager) -> None:
     group = parser.getgroup("tagging")
+
+    # --tags can be in 3 states
+    # []] if not specified
+    # [[]] if specified but empty
+    # [["my_tag"]] if specified with an tag
+    # That means with multiple --tags it becomes [["my_tag1"], ["my_tag2"]]
+    # With action="extend" it cannot become [[]]
     group.addoption(
         "--tags",
-        type=str,
         default=[],
         nargs="*",
-        action="extend",
+        action="append",
         help="Run the tests that contain the given tags, separated by commas",
     )
     group.addoption(
@@ -57,12 +63,12 @@ def pytest_addoption(parser, pluginmanager) -> None:
 class TaggerRunner:
     def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe]) -> None:
         self.counter = counter_class()
+        self._available_tags = []
 
-    def get_available_tags(self, items, print_info=True) -> list:
+    def get_available_tags(self, items) -> list:
         """
         Returns all available tags
         :param items: Items from pytest_collection_modifyitems
-        :param print_info: If True, prints all available tags
         """
         available_tags = []
         for item in items:
@@ -70,9 +76,6 @@ class TaggerRunner:
             for tag in test_tags:
                 if tag not in available_tags:
                     available_tags.append(tag)
-        if print_info:
-            print("Available tags:")
-            print("\n".join(available_tags))
 
         return available_tags
 
@@ -86,39 +89,45 @@ class TaggerRunner:
         selected_items = []
         deselected_items = []
 
-        all_run_tags = config.getoption("--tags")
-
-        if len(all_run_tags) == 0:
-            self.get_available_tags(items)
-            for item in items:
-                deselected_items.append(item)
-        else:
-            operand = config.getoption("--tags-operand")
-
-            # Allows you to combine tags
-            found_combined_tags = set(all_run_tags) & set(_combined_tags)
-            for tag_name in found_combined_tags:
-                all_run_tags += _combined_tags[tag_name]
-
-            for item in items:
-                run_tags = set(all_run_tags)
-                test_tags = get_tags_from_item(item)
-                if (
-                    not run_tags
-                    or (operand is OperandChoices.OR and test_tags & run_tags)
-                    or (operand is OperandChoices.AND and run_tags <= test_tags)
-                ):
-                    selected_items.append(item)
-                else:
+        all_run_tags = get_run_tags(config.getoption("--tags"))
+        if all_run_tags is not None:
+            if len(all_run_tags) == 0:
+                self._available_tags = self.get_available_tags(items)
+                for item in items:
                     deselected_items.append(item)
+            else:
+                operand = config.getoption("--tags-operand")
 
-        config.hook.pytest_deselected(items=deselected_items)
+                # Allows you to combine tags
+                found_combined_tags = set(all_run_tags) & set(_combined_tags)
+                for tag_name in found_combined_tags:
+                    all_run_tags += _combined_tags[tag_name]
+
+                for item in items:
+                    run_tags = set(all_run_tags)
+                    test_tags = get_tags_from_item(item)
+                    if (
+                        not run_tags
+                        or (operand is OperandChoices.OR and test_tags & run_tags)
+                        or (operand is OperandChoices.AND and run_tags <= test_tags)
+                    ):
+                        selected_items.append(item)
+                    else:
+                        deselected_items.append(item)
+
+            config.hook.pytest_deselected(items=deselected_items)
         items[:] = selected_items
         yield
 
     @pytest.mark.trylast
     @pytest.hookimpl(hookwrapper=True)
     def pytest_terminal_summary(self, terminalreporter, exitstatus, config):
+        tags = get_run_tags(config.getoption("--tags"))
+        if tags is not None and len(tags) == 0:
+            terminalreporter.write_line("=" * 6 + " Available tags " + "=" * 6)
+            for tag in self._available_tags:
+                terminalreporter.write_line(f"- '{tag}'")
+
         if self.counter:
             terminalreporter.write_sep("=", "failing tags", yellow=True, bold=True)
             terminalreporter.ensure_newline()

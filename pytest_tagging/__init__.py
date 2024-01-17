@@ -1,3 +1,5 @@
 from .plugin import combine_tags
 
-__version__ = "0.1.0"
+__all__ = [
+    "combine_tags",
+]

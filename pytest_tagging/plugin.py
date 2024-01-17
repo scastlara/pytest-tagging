@@ -63,7 +63,7 @@ def pytest_addoption(parser, pluginmanager) -> None:
 class TaggerRunner:
     def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe]) -> None:
         self.counter = counter_class()
-        self._available_tags = []
+        self._available_tags: list[str] = []
 
     def get_available_tags(self, items) -> list:
         """

@@ -1,3 +1,4 @@
+import platform
 from collections import Counter
 from unittest.mock import Mock
 
@@ -145,6 +146,7 @@ def test_summary_contains_counts(testdir):
     result.stdout.re_match_lines("foo - 1")
 
 
+@pytest.mark.skipif(platform.system() == "Windows", reason="pytest-parallel not supported on Windows")
 def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
     """
     This test ensures counts are collected correctly when tests run in different processes and threads.

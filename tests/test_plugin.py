@@ -146,45 +146,6 @@ def test_summary_contains_counts(testdir):
     result.stdout.re_match_lines("foo - 1")
 
 
-@pytest.mark.skipif(platform.system() == "Windows", reason="pytest-parallel not supported on Windows")
-def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
-    """
-    This test ensures counts are collected correctly when tests run in different processes and threads.
-    Cannot use `pytest.mark.parametrize` because `testdir` fixture ends up raising a weird
-    AssertionError on teardown.
-    """
-    testdir.makepyfile(
-        """
-        import pytest
-        from time import sleep
-
-        @pytest.mark.tags('foo')
-        def test_tagged_1():
-            sleep(0.01)
-            assert False
-
-        @pytest.mark.tags('foo', 'bar')
-        def test_tagged_2():
-            sleep(0.01)
-            assert False
-
-        @pytest.mark.tags('bar')
-        def test_tagged_3():
-            sleep(0.01)
-            assert False
-
-        @pytest.mark.tags('bar')
-        def test_tagged_4():
-            sleep(0.01)
-            assert False
-    """
-    )
-    for _ in range(10):  # to ensure the passing test is not just (very bad) luck
-        result = testdir.runpytest("--workers=2", "--tests-per-worker=2")
-        result.stdout.re_match_lines("foo - 2")
-        result.stdout.re_match_lines("bar - 3")
-
-
 def test_print_tags_available(pytester):
     pytester.makepyfile(
         """
@@ -241,3 +202,43 @@ def test_combine_tags(pytester):
     )
     res = pytester.runpytest("--tags=new_tag")
     res.assert_outcomes(passed=3)
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="pytest-parallel not supported on Windows")
+def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
+    """
+    This test ensures counts are collected correctly when tests run in different processes and threads.
+    Cannot use `pytest.mark.parametrize` because `testdir` fixture ends up raising a weird
+    AssertionError on teardown.
+    Ensure this testcase is the last of the tests else it will break all tests because of a bug in pytest-parallel
+    """
+    testdir.makepyfile(
+        """
+        import pytest
+        from time import sleep
+
+        @pytest.mark.tags('foo')
+        def test_tagged_1():
+            sleep(0.01)
+            assert False
+
+        @pytest.mark.tags('foo', 'bar')
+        def test_tagged_2():
+            sleep(0.01)
+            assert False
+
+        @pytest.mark.tags('bar')
+        def test_tagged_3():
+            sleep(0.01)
+            assert False
+
+        @pytest.mark.tags('bar')
+        def test_tagged_4():
+            sleep(0.01)
+            assert False
+    """
+    )
+    for _ in range(10):  # to ensure the passing test is not just (very bad) luck
+        result = testdir.runpytest("--workers=2", "--tests-per-worker=2")
+        result.stdout.re_match_lines("foo - 2")
+        result.stdout.re_match_lines("bar - 3")

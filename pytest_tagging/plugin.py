@@ -124,8 +124,7 @@ class TaggerRunner:
         items[:] = selected_items
         yield
 
-    @pytest.mark.trylast
-    @pytest.hookimpl(hookwrapper=True)
+    @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_terminal_summary(self, terminalreporter, exitstatus, config):
         tags = get_run_tags(config.getoption("--tags"))
         if tags is not None and len(tags) == 0:

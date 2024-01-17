@@ -91,11 +91,14 @@ class TaggerRunner:
 
         all_run_tags = get_run_tags(config.getoption("--tags"))
         if all_run_tags is not None:
+            # --tags was provided
             if len(all_run_tags) == 0:
+                # If no items in --tags
                 self._available_tags = self.get_available_tags(items)
                 for item in items:
                     deselected_items.append(item)
             else:
+                # If items in --tags
                 operand = config.getoption("--tags-operand")
 
                 # Allows you to combine tags
@@ -114,8 +117,10 @@ class TaggerRunner:
                         selected_items.append(item)
                     else:
                         deselected_items.append(item)
-
             config.hook.pytest_deselected(items=deselected_items)
+        else:
+            # --tags was not provided. Run all tests as normal
+            selected_items = items
         items[:] = selected_items
         yield
 

@@ -1,3 +1,4 @@
+import platform
 from collections import Counter
 from unittest.mock import Mock
 
@@ -72,6 +73,42 @@ def test_collect_tags_or(testdir):
     result.assert_outcomes(passed=2)
 
 
+class TestsTagNotSelected:
+    def test_collect_only_tagged(self, testdir):
+        testdir.makepyfile(
+            """
+            import pytest
+
+            @pytest.mark.tags('foo')
+            def test_tagged_1():
+                assert True
+
+            @pytest.mark.tags('bar')
+            def test_tagged_2():
+                assert True
+        """
+        )
+        result = testdir.runpytest("--tags=foo")
+        result.assert_outcomes(passed=1, failed=0)
+
+    def test_none_tagged(self, testdir):
+        testdir.makepyfile(
+            """
+            import pytest
+
+            @pytest.mark.tags('foo')
+            def test_tagged_1():
+                assert True
+
+            @pytest.mark.tags('bar')
+            def test_tagged_2():
+                assert True
+        """
+        )
+        result = testdir.runpytest("--tags=123")
+        result.assert_outcomes(passed=0, failed=0)
+
+
 def test_collect_tags_and(testdir):
     testdir.makepyfile(
         """
@@ -109,11 +146,71 @@ def test_summary_contains_counts(testdir):
     result.stdout.re_match_lines("foo - 1")
 
 
+def test_print_tags_available(pytester):
+    pytester.makepyfile(
+        """
+    import pytest
+    @pytest.mark.tags('bar')
+    def test_tagged1():
+        pass
+    @pytest.mark.tags('bar')
+    def test_tagged2():
+        pass
+    @pytest.mark.tags('foo')
+    def test_tagged3():
+        pass
+    """
+    )
+    res = pytester.runpytest("--tags")
+    res.assert_outcomes(passed=0)
+    assert res.stdout.str().count("bar") == 1
+    assert res.stdout.str().count("foo") == 1
+
+
+def test_no_print_tags_unspecified(pytester):
+    pytester.makepyfile(
+        """
+        import pytest
+        @pytest.mark.tags('bar')
+        def test_tagged1():
+            pass
+        """
+    )
+    res = pytester.runpytest("")
+
+    assert "Available tags" not in res.stdout.str()
+
+
+def test_combine_tags(pytester):
+    pytester.makepyfile(
+        """
+        import pytest
+        from pytest_tagging import combine_tags
+
+        combine_tags("new_tag", "foo", "bar")
+
+        @pytest.mark.tags('bar')
+        def test_tagged1():
+            pass
+        @pytest.mark.tags('bar')
+        def test_tagged2():
+            pass
+        @pytest.mark.tags('foo')
+        def test_tagged3():
+            pass
+        """
+    )
+    res = pytester.runpytest("--tags=new_tag")
+    res.assert_outcomes(passed=3)
+
+
+@pytest.mark.skipif(platform.system() == "Windows", reason="pytest-parallel not supported on Windows")
 def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
     """
     This test ensures counts are collected correctly when tests run in different processes and threads.
     Cannot use `pytest.mark.parametrize` because `testdir` fixture ends up raising a weird
     AssertionError on teardown.
+    Ensure this testcase is the last of the tests else it will break all tests because of a bug in pytest-parallel
     """
     testdir.makepyfile(
         """

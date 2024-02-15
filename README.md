@@ -39,6 +39,7 @@ pytest --tags integration --tags MY_COMPONENT_NAME --tags-operand AND
 ```
 
 You can also display all available tags by specifyin `--tags` empty:
+
 ```sh
 pytest --tags
 >>Available tags:
@@ -47,6 +48,7 @@ pytest --tags
 ```
 
 Tags can be combined using `pytest_tagging.combine_tags`:
+
 ```sh
 from pytest_tagging import combine_tags
 combine_tags("all", "foo", "bar")

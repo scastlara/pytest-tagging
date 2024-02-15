@@ -27,9 +27,8 @@ def select_counter_class(config) -> type[Counter] | type[TagCounterThreadSafe]:
 
 def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "tags('tag1', 'tag2'): add tags to a given test")
-    if not config.option.collectonly:
-        counter_class = select_counter_class(config)
-        config.pluginmanager.register(TaggerRunner(counter_class), "taggerrunner")
+    counter_class = select_counter_class(config)
+    config.pluginmanager.register(TaggerRunner(counter_class), "taggerrunner")
 
 
 def pytest_addoption(parser, pluginmanager) -> None:

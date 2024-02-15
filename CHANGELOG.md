@@ -1,3 +1,13 @@
+## v1.4.0 (2024-01-18)
+
+### Feat
+
+- add combine and all tags (#13)
+
+### Fix
+
+- attempt to fix action
+
 ## v1.3.0 (2023-04-01)
 
 ### Feat

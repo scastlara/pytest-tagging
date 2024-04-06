@@ -53,6 +53,7 @@ Tags can be combined using `pytest_tagging.combine_tags`:
 from pytest_tagging import combine_tags
 combine_tags("all", "foo", "bar")
 ```
+
 Then you can execute `pytest --tags all` and it will run all tests with `foo` and `bar` tags
 
 ## Extra

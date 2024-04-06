@@ -1,4 +1,5 @@
 from collections import Counter
+from dataclasses import dataclass, field
 from enum import Enum
 
 import pytest
@@ -9,6 +10,13 @@ from .utils import TagCounterThreadSafe, get_run_tags, get_tags_from_item
 class OperandChoices(Enum):
     OR = "OR"
     AND = "AND"
+
+
+@dataclass(frozen=True, slots=True)
+class TaggingOptions:
+    tags: list[str] = field(default_factory=list)
+    no_tags: list[str] = field(default_factory=list)
+    operand: OperandChoices = OperandChoices.OR
 
 
 # Allows you to combine tags
@@ -27,25 +35,24 @@ def select_counter_class(config) -> type[Counter] | type[TagCounterThreadSafe]:
 
 def pytest_configure(config) -> None:
     config.addinivalue_line("markers", "tags('tag1', 'tag2'): add tags to a given test")
+    config_opts = TaggingOptions(
+        tags=config.getoption("--tags"),
+        no_tags=config.getoption("--no-tags"),
+        operand=config.getoption("--tags-operand"),
+    )
     counter_class = select_counter_class(config)
-    config.pluginmanager.register(TaggerRunner(counter_class), "taggerrunner")
+    config.pluginmanager.register(TaggerRunner(counter_class, config=config_opts), "taggerrunner")
 
 
 def pytest_addoption(parser, pluginmanager) -> None:
     group = parser.getgroup("tagging")
 
-    # --tags can be in 3 states
-    # []] if not specified
-    # [[]] if specified but empty
-    # [["my_tag"]] if specified with an tag
-    # That means with multiple --tags it becomes [["my_tag1"], ["my_tag2"]]
-    # With action="extend" it cannot become [[]]
     group.addoption(
         "--tags",
         default=[],
         nargs="*",
         action="append",
-        help="Run the tests that contain the given tags, separated by commas",
+        help="Run the tests that contain the given tags.",
     )
     group.addoption(
         "--tags-operand",
@@ -53,18 +60,18 @@ def pytest_addoption(parser, pluginmanager) -> None:
         default=OperandChoices.OR,
         choices=list(OperandChoices),
     )
-    parser.addini(
-        "tags",
-        help="Run the tests that contain the given tags, separated by commas",
+    parser.addoption(
+        "--no-tags", default=[], nargs="*", action="extend", help="Run the tests that do not contain the given tags."
     )
 
 
 class TaggerRunner:
-    def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe]) -> None:
+    def __init__(self, counter_class: type[Counter] | type[TagCounterThreadSafe], config: TaggingOptions) -> None:
         self.counter = counter_class()
+        self.config = config
         self._available_tags: list[str] = []
 
-    def get_available_tags(self, items) -> list:
+    def get_available_tags(self, items) -> list[str]:
         """
         Returns all available tags
         :param items: Items from pytest_collection_modifyitems
@@ -80,15 +87,16 @@ class TaggerRunner:
 
     def pytest_report_header(self, config) -> list[str]:
         """Add tagging config to pytest header."""
-        tags = config.getoption("--tags")
-        return [f"tagging: tags={tags}"]
+        tags = self.config.tags
+        no_tags = self.config.no_tags
+        return [f"tagging: tags={tags}", f"tagging: no-tags={no_tags}"]
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_collection_modifyitems(self, session, config, items):
         selected_items = []
         deselected_items = []
 
-        all_run_tags = get_run_tags(config.getoption("--tags"))
+        all_run_tags = get_run_tags(self.config.tags)
         if all_run_tags is not None:
             # --tags was provided
             if len(all_run_tags) == 0:
@@ -98,7 +106,7 @@ class TaggerRunner:
                     deselected_items.append(item)
             else:
                 # If items in --tags
-                operand = config.getoption("--tags-operand")
+                operand = self.config.operand
 
                 # Allows you to combine tags
                 found_combined_tags = set(all_run_tags) & set(_combined_tags)
@@ -125,7 +133,7 @@ class TaggerRunner:
 
     @pytest.hookimpl(hookwrapper=True, trylast=True)
     def pytest_terminal_summary(self, terminalreporter, exitstatus, config):
-        tags = get_run_tags(config.getoption("--tags"))
+        tags = get_run_tags(self.config.tags)
         if tags is not None and len(tags) == 0:
             terminalreporter.write_line("=" * 6 + " Available tags " + "=" * 6)
             for tag in self._available_tags:

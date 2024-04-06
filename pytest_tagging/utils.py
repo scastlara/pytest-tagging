@@ -29,13 +29,3 @@ def get_tags_from_item(item) -> set[str]:
 
 def flatten_list(matrix: list[list]) -> list:
     return [item for row in matrix for item in row]
-
-
-def get_run_tags(all_run_tags: list[list]) -> None | list:
-    """
-    Get
-    """
-    if len(all_run_tags) == 0:
-        return None
-    else:
-        return flatten_list(all_run_tags) if all_run_tags[0] is not None else []

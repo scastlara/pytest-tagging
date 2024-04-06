@@ -38,7 +38,7 @@ tests that have all the provided tags, use the option --tags-operand=AND, like s
 pytest --tags integration --tags MY_COMPONENT_NAME --tags-operand AND
 ```
 
-You can also display all available tags by specifyin `--tags` empty:
+You can also display all available tags by specifying `--tags` empty:
 
 ```sh
 pytest --tags

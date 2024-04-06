@@ -204,6 +204,35 @@ def test_combine_tags(pytester):
     res.assert_outcomes(passed=3)
 
 
+@pytest.mark.parametrize(
+    ("options", "expected_in_output"),
+    [
+        ("", ".+2 passed.+"),
+        ("--tags", ".+Available tags.+"),
+        ("--tags=foo", ".+1 passed.+"),
+    ],
+)
+def test_all_states_of_tags_options(pytester, options, expected_in_output):
+    """We have different behaviors depending on the content of --tags but also
+    if the option is provided at all.
+
+    This test ensures this behaviors are consistent."""
+
+    pytester.makepyfile(
+        """
+    import pytest
+    @pytest.mark.tags('bar')
+    def test_tagged2():
+        pass
+    @pytest.mark.tags('foo')
+    def test_tagged3():
+        pass
+    """
+    )
+    res = pytester.runpytest(options)
+    res.stdout.re_match_lines(expected_in_output)
+
+
 @pytest.mark.skipif(platform.system() == "Windows", reason="pytest-parallel not supported on Windows")
 def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
     """

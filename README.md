@@ -13,7 +13,6 @@ for each specific tag.
 This package exists because doing all of this with `pytest.mark` is painful, since it requires registering marks, 
 and you cannot use variables defined elsewhere easily.
 
-
 ## Usage
 
 ```python
@@ -29,7 +28,6 @@ pytest --tags integration --tags MY_COMPONENT_NAME
 ```
 
 ![pytest-tagging-screenshot](/media/screenshot-1.png)
-
 
 By default, all tests that match at least one tag will be collected. To only select
 tests that have all the provided tags, use the option --tags-operand=AND, like so:
@@ -47,14 +45,27 @@ pytest --tags
 >>bar
 ```
 
+### Combining tags
+
 Tags can be combined using `pytest_tagging.combine_tags`:
 
-```sh
+```python
 from pytest_tagging import combine_tags
 combine_tags("all", "foo", "bar")
 ```
 
 Then you can execute `pytest --tags all` and it will run all tests with `foo` and `bar` tags
 
+### Excluding tags
+
+You can exclude tags for a particular test run by using the option `--exclude-tags` in a similar
+way to the `--tags` option. Notice tests with tags that are excluded will not be executed, even if
+they contain a tag that was selected with `--tags`.
+
+```sh
+pytest --tags mobile --tags web --exclude-tags flaky
+```
+
 ## Extra
+
 - It is thread-safe, so it can be used with [pytest-parallel](https://github.com/browsertron/pytest-parallel).

@@ -67,46 +67,105 @@ def test_collect_tags_or(testdir):
         @pytest.mark.tags('bar')
         def test_tagged_2():
             assert True
+
+        @pytest.mark.tags('baz')
+        def test_tagged_3():
+            assert True
     """
     )
     result = testdir.runpytest("--tags=foo", "--tags=bar")
     result.assert_outcomes(passed=2)
 
 
-class TestsTagNotSelected:
-    def test_collect_only_tagged(self, testdir):
-        testdir.makepyfile(
-            """
-            import pytest
-
-            @pytest.mark.tags('foo')
-            def test_tagged_1():
-                assert True
-
-            @pytest.mark.tags('bar')
-            def test_tagged_2():
-                assert True
+def test_exclude_tags(testdir):
+    testdir.makepyfile(
         """
-        )
-        result = testdir.runpytest("--tags=foo")
-        result.assert_outcomes(passed=1, failed=0)
+        import pytest
 
-    def test_none_tagged(self, testdir):
-        testdir.makepyfile(
-            """
-            import pytest
+        @pytest.mark.tags('foo')
+        def test_1():
+            assert True
 
-            @pytest.mark.tags('foo')
-            def test_tagged_1():
-                assert True
-
-            @pytest.mark.tags('bar')
-            def test_tagged_2():
-                assert True
+        @pytest.mark.tags('bar')
+        def test_2():
+            assert False
         """
-        )
-        result = testdir.runpytest("--tags=123")
-        result.assert_outcomes(passed=0, failed=0)
+    )
+    result = testdir.runpytest("--exclude-tags=bar")
+    result.assert_outcomes(passed=1)
+
+
+def test_exclude_tags_takes_precedence_over_tags(testdir):
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.tags('foo')
+        def test_1():
+            assert True
+
+        @pytest.mark.tags('bar', 'baz')
+        def test_2():
+            assert False
+        """
+    )
+
+    result = testdir.runpytest("--tags=baz", "--tags=foo", "--exclude-tags=bar")
+    result.assert_outcomes(passed=1)
+
+
+def test_empty_exclude_tags(testdir):
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.tags('foo')
+        def test_1():
+            assert True
+
+        @pytest.mark.tags('bar', 'baz')
+        def test_2():
+            assert False
+        """
+    )
+    result = testdir.runpytest("--exclude-tags")
+    result.assert_outcomes(passed=1, failed=1)
+
+
+def test_collect_only_tagged(testdir):
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.tags('foo')
+        def test_tagged_1():
+            assert True
+
+        @pytest.mark.tags('bar')
+        def test_tagged_2():
+            assert True
+    """
+    )
+    result = testdir.runpytest("--tags=foo")
+    result.assert_outcomes(passed=1, failed=0)
+
+
+def test_none_tagged(testdir):
+    testdir.makepyfile(
+        """
+        import pytest
+
+        @pytest.mark.tags('foo')
+        def test_tagged_1():
+            assert True
+
+        @pytest.mark.tags('bar')
+        def test_tagged_2():
+            assert True
+    """
+    )
+    result = testdir.runpytest("--tags=123")
+    result.assert_outcomes(passed=0, failed=0)
 
 
 def test_collect_tags_and(testdir):
@@ -202,6 +261,29 @@ def test_combine_tags(pytester):
     )
     res = pytester.runpytest("--tags=new_tag")
     res.assert_outcomes(passed=3)
+
+
+def test_combine_tags_with_exclude(pytester):
+    pytester.makepyfile(
+        """
+        import pytest
+        from pytest_tagging import combine_tags
+
+        combine_tags("new_tag", "foo", "bar")
+
+        @pytest.mark.tags('bar')
+        def test_tagged1():
+            pass
+        @pytest.mark.tags('bar')
+        def test_tagged2():
+            pass
+        @pytest.mark.tags('foo')
+        def test_tagged3():
+            pass
+        """
+    )
+    result = pytester.runpytest("--exclude-tags=new_tag")
+    result.assert_outcomes(passed=0, failed=0)
 
 
 @pytest.mark.parametrize(

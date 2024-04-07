@@ -1,6 +1,4 @@
 from collections import Counter
-from dataclasses import dataclass
-from enum import Enum
 
 import pytest
 
@@ -59,7 +57,9 @@ class TaggerRunnerPlugin:
 
     def pytest_report_header(self, config) -> list[str]:
         """Add tagging config to pytest header."""
-        return [f"tagging: tags={self.selector.config.tags}"]
+        tags_to_display = self.selector.config.tags or []
+        exclude_tags_to_display = self.selector.config.exclude_tags or []
+        return [f"tagging: tags={tags_to_display} , exclude-tags={exclude_tags_to_display}"]
 
     @pytest.hookimpl(hookwrapper=True)
     def pytest_collection_modifyitems(self, session, config, items):

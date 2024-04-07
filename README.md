@@ -45,6 +45,8 @@ pytest --tags
 >>bar
 ```
 
+### Combining tags
+
 Tags can be combined using `pytest_tagging.combine_tags`:
 
 ```python
@@ -53,6 +55,16 @@ combine_tags("all", "foo", "bar")
 ```
 
 Then you can execute `pytest --tags all` and it will run all tests with `foo` and `bar` tags
+
+### Excluding tags
+
+You can exclude tags for a particular test run by using the option `--exclude-tags` in a similar
+way to the `--tags` option. Notice tests with tags that are excluded will not be executed, even if
+they contain a tag that was selected with `--tags`.
+
+```sh
+pytest --tags mobile --tags web --exclude-tags flaky
+```
 
 ## Extra
 

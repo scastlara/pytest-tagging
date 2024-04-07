@@ -44,7 +44,6 @@ class TestSelector:
             # or we just passed an empty `--tags` options to see them all.
             deselected_items.update(items)
         else:
-            # FIXME: What happens if only `--exclude-tags` is provided?
             # Some tags were selected
             for item in items:
                 test_tags = get_tags_from_item(item)

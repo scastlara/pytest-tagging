@@ -39,7 +39,7 @@ class TestSelector:
         """
         selected_items = set()
         deselected_items = set()
-        if self.config.tags == [] or (self.config.tags is not None and not tags_to_run):
+        if is_tags_empty(self.config.tags) or (is_tags_option_provided(self.config.tags) and not tags_to_run):
             # No tags match the conditions to run
             # or we just passed an empty `--tags` options to see them all.
             deselected_items.update(items)
@@ -50,8 +50,10 @@ class TestSelector:
                 # Excluding tags takes precendence ove any selection.
                 if test_tags & tags_to_exclude:
                     deselected_items.add(item)
-                elif (self.config.operand is OperandChoices.OR and test_tags & tags_to_run) or (
-                    self.config.operand is OperandChoices.AND and tags_to_run <= test_tags
+                elif (
+                    not is_tags_option_provided(self.config.tags)
+                    or (self.config.operand is OperandChoices.OR and test_tags & tags_to_run)
+                    or (self.config.operand is OperandChoices.AND and tags_to_run <= test_tags)
                 ):
                     selected_items.add(item)
                 else:
@@ -61,3 +63,11 @@ class TestSelector:
 
 def get_tags_from_item(item) -> set[str]:
     return set(item.get_closest_marker("tags").args) if item.get_closest_marker("tags") else set()
+
+
+def is_tags_empty(tags: list[str] | None) -> bool:
+    return tags == []
+
+
+def is_tags_option_provided(tags: list[str] | None) -> bool:
+    return tags is not None

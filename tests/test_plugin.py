@@ -8,6 +8,13 @@ from pytest_tagging.plugin import select_counter_class
 from pytest_tagging.utils import TagCounterThreadSafe
 
 
+def test_no_tags(pytester):
+    """Test that with no tags specified a test is still executed"""
+    pytester.makepyfile("def test_pass(): pass")
+    res = pytester.runpytest()
+    res.assert_outcomes(passed=1)
+
+
 @pytest.mark.parametrize(
     "option, expected_counter",
     (

@@ -78,9 +78,7 @@ class TaggerRunner:
         available_tags = set()
         for item in items:
             test_tags = set(get_tags_from_item(item))
-            for tag in test_tags:
-                available_tags.add(tag)
-
+            available_tags.update(test_tags)
         return list(available_tags)
 
     def get_tags_to_run(self, tags: list[str] | None, available_tags: list[str], operand: OperandChoices) -> set[str]:

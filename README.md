@@ -38,7 +38,7 @@ tests that have all the provided tags, use the option --tags-operand=AND, like s
 pytest --tags integration --tags MY_COMPONENT_NAME --tags-operand AND
 ```
 
-You can also display all available tags by specifyin `--tags` empty:
+You can also display all available tags by specifying `--tags` empty:
 
 ```sh
 pytest --tags
@@ -53,6 +53,7 @@ Tags can be combined using `pytest_tagging.combine_tags`:
 from pytest_tagging import combine_tags
 combine_tags("all", "foo", "bar")
 ```
+
 Then you can execute `pytest --tags all` and it will run all tests with `foo` and `bar` tags
 
 ## Extra

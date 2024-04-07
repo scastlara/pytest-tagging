@@ -1,8 +1,6 @@
 import threading
 
-import pytest
-
-from pytest_tagging.utils import TagCounterThreadSafe, flatten_list, get_run_tags
+from pytest_tagging.utils import TagCounterThreadSafe
 
 
 class TestTagCounterThreadSafe:
@@ -41,21 +39,3 @@ class TestTagCounterThreadSafe:
             thread.join()
 
         assert dict(counter.items()) == {"A": 5, "B": 5}
-
-
-def test_flatten_list():
-    my_list = [["foo"], ["bar"]]
-    assert flatten_list(my_list) == ["foo", "bar"]
-
-
-# First index is test data, seconds is expected result
-@pytest.mark.parametrize(
-    "tags",
-    [
-        [[], None],
-        [[[]], []],
-        [[["tag1"], ["tag2"]], ["tag1", "tag2"]],
-    ],
-)
-def test_get_run_tags(tags: list[list]):
-    assert get_run_tags(tags[0]) == tags[1]

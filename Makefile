@@ -1,4 +1,4 @@
-PYTHON?=python3.11
+PYTHON?=python3.12
 VENV_TEST=venv/venv_test
 VENV=.venv
 
@@ -9,7 +9,7 @@ $(VENV_TEST):
 venv: $(VENV_TEST)
 
 lint: venv
-	$(VENV)/bin/black --diff --check pytest_tagging tests
+	$(VENV)/bin/ruff format --check pytest_tagging tests
 	$(VENV)/bin/ruff check pytest_tagging tests
 	$(VENV)/bin/mypy pytest_tagging tests
 
@@ -17,7 +17,7 @@ unit-tests: venv
 	$(VENV)/bin/pytest
 
 format:
-	$(VENV)/bin/ruff pytest_tagging tests --fix
-	$(VENV)/bin/black pytest_tagging tests
+	$(VENV)/bin/ruff check pytest_tagging tests --fix
+	$(VENV)/bin/ruff format pytest_tagging tests
 
 test: lint unit-tests

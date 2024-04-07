@@ -113,7 +113,7 @@ class TaggerRunner:
             # Some tags were selected
             for item in items:
                 test_tags = get_tags_from_item(item)
-                if (self.config.operand is OperandChoices.OR and test_tags & all_run_tags) or (
+                if not len(all_run_tags) or (self.config.operand is OperandChoices.OR and test_tags & all_run_tags) or (
                     self.config.operand is OperandChoices.AND and all_run_tags <= test_tags
                 ):
                     selected_items.append(item)

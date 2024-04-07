@@ -271,3 +271,10 @@ def test_taggerrunner_with_parallel_with_processes_and_threads(testdir):
         result = testdir.runpytest("--workers=2", "--tests-per-worker=2")
         result.stdout.re_match_lines("foo - 2")
         result.stdout.re_match_lines("bar - 3")
+
+
+def test_no_tags(pytester):
+    """Test that with no tags specified a test is still executed"""
+    pytester.makepyfile("def test_pass(): pass")
+    res = pytester.runpytest()
+    res.assert_outcomes(passed=1)

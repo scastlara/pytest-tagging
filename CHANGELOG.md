@@ -1,3 +1,9 @@
+## v1.5.1 (2024-04-07)
+
+### Fix
+
+- run all tests when no tags provided and option is not set (#21)
+
 ## v1.5.0 (2024-04-07)
 
 ### Feat

@@ -1,3 +1,9 @@
+## v1.5.0 (2024-04-07)
+
+### Feat
+
+- added `--exclude-tags` option (#18)
+
 ## v1.4.2 (2024-04-07)
 
 ### Refactor

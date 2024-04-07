@@ -1,5 +1,8 @@
+from dataclasses import dataclass
 from multiprocessing import Manager
 from typing import Any, Iterable
+
+from pytest_tagging.choices import OperandChoices
 
 
 class TagCounterThreadSafe:
@@ -23,5 +26,8 @@ class TagCounterThreadSafe:
         return bool(self.counter)
 
 
-def get_tags_from_item(item) -> set[str]:
-    return set(item.get_closest_marker("tags").args) if item.get_closest_marker("tags") else set()
+@dataclass(frozen=True, slots=True)
+class TaggingOptions:
+    tags: list[str] | None = None
+    exclude_tags: list[str] | None = None
+    operand: OperandChoices = OperandChoices.OR

@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pytest_tagging"
-version = "1.5.1"
+version = "1.5.2"
 description = "a pytest plugin to tag tests"
 authors = ["Sergio Castillo <s.cast.lara@gmail.com>"]
 readme = "README.md"
@@ -61,7 +61,7 @@ fail_under = 90
 exclude_lines = ["if TYPE_CHECKING:", "pragma: no cover"]
 
 [tool.commitizen]
-version = "1.5.1"
+version = "1.5.2"
 version_files = ["pyproject.toml:version"]
 tag_format = "v$version"
 

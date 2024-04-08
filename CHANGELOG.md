@@ -1,3 +1,9 @@
+## v1.5.2 (2024-04-08)
+
+### Fix
+
+- maintain test collection order (#22)
+
 ## v1.5.1 (2024-04-07)
 
 ### Fix

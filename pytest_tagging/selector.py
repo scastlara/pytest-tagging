@@ -37,28 +37,28 @@ class TestSelector:
         - Those that should be selected.
         - Those that should be deselected.
         """
-        selected_items = set()
-        deselected_items = set()
+        selected_items = []
+        deselected_items = []
         if is_tags_empty(self.config.tags) or (is_tags_option_provided(self.config.tags) and not tags_to_run):
             # No tags match the conditions to run
             # or we just passed an empty `--tags` options to see them all.
-            deselected_items.update(items)
+            deselected_items.extend(items)
         else:
             # Some tags were selected
             for item in items:
                 test_tags = get_tags_from_item(item)
                 # Excluding tags takes precendence ove any selection.
                 if test_tags & tags_to_exclude:
-                    deselected_items.add(item)
+                    deselected_items.append(item)
                 elif (
                     not is_tags_option_provided(self.config.tags)
                     or (self.config.operand is OperandChoices.OR and test_tags & tags_to_run)
                     or (self.config.operand is OperandChoices.AND and tags_to_run <= test_tags)
                 ):
-                    selected_items.add(item)
+                    selected_items.append(item)
                 else:
-                    deselected_items.add(item)
-        return list(selected_items), list(deselected_items)
+                    deselected_items.append(item)
+        return selected_items, deselected_items
 
 
 def get_tags_from_item(item) -> set[str]:

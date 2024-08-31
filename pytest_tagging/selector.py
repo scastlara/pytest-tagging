@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 # Allows you to combine tags
 from pytest_tagging.choices import OperandChoices
 from pytest_tagging.utils import TaggingOptions

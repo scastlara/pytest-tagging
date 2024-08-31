@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from dataclasses import dataclass
 from multiprocessing import Manager
 from typing import Any, Iterable
@@ -26,7 +28,7 @@ class TagCounterThreadSafe:
         return bool(self.counter)
 
 
-@dataclass(frozen=True, slots=True)
+@dataclass(frozen=True)
 class TaggingOptions:
     tags: list[str] | None = None
     exclude_tags: list[str] | None = None
